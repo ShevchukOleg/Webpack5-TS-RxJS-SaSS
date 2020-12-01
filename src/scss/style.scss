@@ -1,0 +1,16 @@
+@import "./modules/reset";
+@import "./modules/variables.scss";
+@import "./modules/helpers.scss";
+
+@import "./modules/type.scss";
+@import "./modules/global.scss";
+@import "./modules/app-header.scss";
+@import "./modules/main-content.scss";
+
+p {
+  font: {
+    family: 'Roboto';
+    size: 18px;
+  };
+  color: rgb(0, 255, 255) !important;
+}
