@@ -59,7 +59,7 @@ promiseOnEL.then((event: KeyboardEvent) => {
 })();
 
 import { fromEvent, of, from, timer, interval, range, empty, throwError } from 'rxjs';
-import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce } from 'rxjs/operators'
+import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil } from 'rxjs/operators'
 const observable = fromEvent(input_2, 'input');
 observable.pipe(
   debounceTime(600),
@@ -103,13 +103,13 @@ const observable_1 = new Observable(
 const subscription_1 = observable_1.subscribe(
   (nextData) => console.log("observable_1:", nextData),
   (errorData) => console.warn(errorData),
-  () => console.log("Completed observable_1 !")
+  () => console.warn("Completed observable_1 !")
 );
 
 const subscription_2 = observable_1.subscribe(
   (nextData) => console.log("observable_2:", nextData),
   (errorData) => console.warn(errorData),
-  () => console.log("Completed observable_2 !")
+  () => console.warn("Completed observable_2 !")
 )
 
 function unsubscribe_2() {
@@ -129,7 +129,7 @@ const observable_2 = of(1, 3, 15, 67, 33, 92);
 observable_2.subscribe(
   (nextData) => console.log(nextData),
   (errorData) => console.warn(errorData),
-  () => console.log("Completed observable_2 !")
+  () => console.warn("Completed observable_2 !")
 );
 
 const observable_3 = from([1, 3, 15, 67, 33, 92]);
@@ -137,14 +137,14 @@ const observable_3 = from([1, 3, 15, 67, 33, 92]);
 observable_3.subscribe(
   (nextData) => console.log(nextData),
   (errorData) => console.warn(errorData),
-  () => console.log("Completed observable_3 !")
+  () => console.warn("Completed observable_3 !")
 );
 
 const observable_from_Promise = from(Promise.resolve(777));
 observable_from_Promise.subscribe(
   (nextData) => console.log(nextData),
   (errorData) => console.warn(errorData),
-  () => console.log("Completed observable_from_Promise !")
+  () => console.warn("Completed observable_from_Promise !")
 );
 
 const observable_timer = timer(0, 400)
@@ -152,20 +152,20 @@ const observable_interval = interval(100);
 // observable_interval.subscribe(
 //   (nextData) => console.log(nextData),
 //   (errorData) => console.warn(errorData),
-//   () => console.log("Completed observable_interval!")
+//   () => console.warn("Completed observable_interval!")
 // );
 
 // observable_timer.subscribe(
 //   (nextData) => console.log(nextData),
 //   (errorData) => console.warn(errorData),
-//   () => console.log("Completed observable_2 !")
+//   () => console.warn("Completed observable_2 !")
 // );
 
 const observable_range = range(0, 11);
 observable_range.subscribe(
   (nextData) => console.log("Range observer:", nextData),
   (errorData) => console.warn(errorData),
-  () => console.log("Completed observable_range !")
+  () => console.warn("Completed observable_range !")
 );
 
 const observable_empty = empty();
@@ -179,7 +179,7 @@ const observable_Error = throwError('Generated error');
 observable_Error.subscribe(
   (nextData) => console.log("Range observer:", nextData),
   (errorData) => console.warn(errorData),
-  () => console.log("Completed observable_empty !")
+  () => console.warn("Completed observable_empty !")
 );
 
 //____________________Pipe and Intermediate data processing
@@ -190,6 +190,14 @@ const rengeProcessing = observable_range.pipe(
   })
 ).subscribe(
   (value) => console.log('Filtering renge', value)
+)
+
+const rengeProcessing_distinctUntilChanged = from([13, 13, 13, 16, 9, 25, 9, 9, 16, 25, 13]).pipe(
+  distinctUntilChanged()
+).subscribe(
+  (nextData) => console.log("distinctUntilChanged", nextData),
+  (errorData) => console.warn(errorData),
+  () => console.warn("Completed distinctUntilChanged!")
 )
 
 const rengeProcessing_first = observable_range.pipe(
@@ -279,7 +287,7 @@ const rengeProcessing_2 = observable_range.pipe(
 ).subscribe(
   (nextData) => console.log("rengeProcessing_2:", nextData),
   (errorData) => console.warn(errorData),
-  () => console.log("Completed rengeProcessing_2 !")
+  () => console.warn("Completed rengeProcessing_2 !")
 )
 
 const rengeProcessingDebounce_interval = observable_range.pipe(
@@ -287,7 +295,7 @@ const rengeProcessingDebounce_interval = observable_range.pipe(
 ).subscribe(
   (nextData) => console.log("rengeProcessingDebounce:", nextData),
   (errorData) => console.warn("rengeProcessingDebounce", errorData),
-  () => console.log("Completed rengeProcessingDebounce!")
+  () => console.warn("Completed rengeProcessingDebounce!")
 )
 
 const rengeProcessingDebounce_timer = interval(1000).pipe(
@@ -295,5 +303,70 @@ const rengeProcessingDebounce_timer = interval(1000).pipe(
 ).subscribe(
   (nextData) => console.log("rengeProcessingDebounce timer:", nextData, Date.now()),
   (errorData) => console.warn("rengeProcessingDebounce timer", errorData),
-  () => console.log("Completed rengeProcessingDebounce timer!")
+  () => console.warn("Completed rengeProcessingDebounce timer!")
+)
+
+const intervalProcessingDebouncetTime = interval(1000).pipe(
+  debounceTime(999)
+).subscribe(
+  (nextData) => console.log("rengeProcessingDebouncetTime:", nextData, Date.now()),
+  (errorData) => console.warn("rengeProcessingDebouncetTime", errorData),
+  () => console.warn("Completed rengeProcessingDebouncetTime!")
+)
+
+const timerProcessing_throttleTime = timer(0, 200).pipe(
+  throttleTime(600)
+).subscribe(
+  (nextData) => console.log("timerProcessing_throttleTime:", nextData, Date.now()),
+  (errorData) => console.warn("timerProcessing_throttleTime", errorData),
+  () => console.warn("Completed timerProcessing_throttleTime!")
+)
+
+const timerProcessing_throttle = timer(0, 200).pipe(
+  throttle(ev => interval(600))
+).subscribe(
+  (nextData) => console.log("timerProcessing_throttle:", nextData, Date.now()),
+  (errorData) => console.warn("timerProcessing_throttle", errorData),
+  () => console.warn("Completed timerProcessing_throttle!")
+)
+
+const timerProcessing_audit = timer(0, 200).pipe(
+  audit(ev => interval(600))
+).subscribe(
+  (nextData) => console.log("timerProcessing_audit:", nextData, Date.now()),
+  (errorData) => console.warn("timerProcessing_audit", errorData),
+  () => console.warn("Completed timerProcessing_audit!")
+)
+
+
+const fromProcessing_skip = from([1, 3, 5, 8, 13, 30]).pipe(
+  skip(3)
+).subscribe(
+  (value) => console.log('fromProcessing_skip:', value),
+  (error) => console.warn('fromProcessing_skip:', error),
+  () => console.warn("Completed fromProcessing_skip!")
+)
+
+const intervalProcessing_skipUntil = interval(1000).pipe(
+  skipUntil(timer(1500, 1000))
+).subscribe(
+  (value) => console.log('intervalProcessing_skipUntil:', value),
+  (error) => console.warn('intervalProcessing_skipUntil:', error),
+  () => console.warn("Completed intervalProcessing_skipUntil!")
+)
+
+const intervalProcessing_take = interval(1000).pipe(
+  take(5)
+).subscribe(
+  (value) => console.log('intervalProcessing_take:', value),
+  (error) => console.warn('intervalProcessing_take:', error),
+  () => console.warn("Completed intervalProcessing_take!")
+)
+
+const intervalProcessing_takeUntil = interval(500).pipe(
+  takeUntil(timer(3600))
+).subscribe(
+  (value) => console.log('intervalProcessing_takeUntil:', value),
+  (error) => console.warn('intervalProcessing_takeUntil:', error),
+  () => console.warn("Completed intervalProcessing_takeUntil!")
 )
