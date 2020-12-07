@@ -58,8 +58,8 @@ promiseOnEL.then((event: KeyboardEvent) => {
   })
 })();
 
-import { fromEvent, of, from, timer, interval, range, empty, throwError } from 'rxjs';
-import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil } from 'rxjs/operators'
+import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race } from 'rxjs';
+import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil, takeWhile, map, mergeMap, startWith, withLatestFrom, pairwise } from 'rxjs/operators'
 const observable = fromEvent(input_2, 'input');
 observable.pipe(
   debounceTime(600),
@@ -369,4 +369,146 @@ const intervalProcessing_takeUntil = interval(500).pipe(
   (value) => console.log('intervalProcessing_takeUntil:', value),
   (error) => console.warn('intervalProcessing_takeUntil:', error),
   () => console.warn("Completed intervalProcessing_takeUntil!")
+)
+
+const intervalProcessing_takeWhile = interval(500).pipe(
+  takeWhile((value: number) => {
+    return value < 10
+  })
+).subscribe(
+  (value) => console.log('intervalProcessing_takeWhile:', value),
+  (error) => console.warn('intervalProcessing_takeWhile:', error),
+  () => console.warn("Completed intervalProcessing_takeWhile!")
+)
+
+// Комбынування Observable
+const timer_1 = timer(1000, 4000).pipe(take(3));
+const timer_2 = timer(2000, 4000).pipe(take(3));
+const timer_3 = timer(3000, 4000).pipe(take(3));
+
+
+const combineLatestExemple = combineLatest(timer_1, timer_2, timer_3);
+combineLatestExemple.subscribe({
+  next: (value: Array<number>) => console.log('CombineLatestExemple next:', value),
+  complete: () => console.warn('Complete: combineLatestExemple'),
+  error: (error) => console.log('Error', error)
+});
+
+const combineLatestProjectExemple = combineLatest(timer_1, timer_2, timer_3).pipe(
+  map(
+    ([a, b, c]) => {
+      console.log(a, b, c);
+      return a + b + c;
+    }
+  ));
+
+combineLatestProjectExemple.subscribe({
+  next: (value: number) => console.log('combineLatestProjectExemple next:', value),
+  complete: () => console.warn('Complete: combineLatestProjectExemple'),
+  error: (error) => console.log('Error', error)
+});
+
+const zipExemple = zip(timer_1, timer_2, timer_3);
+zipExemple.subscribe({
+  next: (value: Array<number>) => console.log('zipExemple next:', value),
+  complete: () => console.warn('Complete: zipExemple'),
+  error: (error) => console.log('Error', error)
+});
+
+const zipPostFuncExemple = zip(timer_1, timer_2, timer_3).pipe(
+  map(([a, b, c]) => {
+    return { first: a, second: b, third: c };
+  })
+);
+zipPostFuncExemple.subscribe({
+  next: (value: any) => console.log('zipPostFuncExemple next:', value),
+  complete: () => console.warn('Complete: zipPostFuncExemple'),
+  error: (error) => console.log('Error', error)
+});
+
+
+const forkJoinExemple = forkJoin(timer_1, timer_2, timer_3);
+forkJoinExemple.subscribe({
+  next: (value: any) => console.log('forkJoinExemple next:', value),
+  complete: () => console.warn('Complete: forkJoinExemple'),
+  error: (error) => console.log('Error forkJoinExemple', error)
+});
+
+const timer_4 = timer(1000, 100).pipe(take(3));
+
+const concatObservable = concat(timer_1, timer_4);
+concatObservable.subscribe({
+  next: (value: any) => console.log('concatObservable next:', value),
+  complete: () => console.warn('Complete: concatObservable'),
+  error: (error) => console.log('Error concatObservable', error)
+});
+
+const mergeObservable = merge(timer_1.pipe(take(3)), timer_4.pipe(take(2)));
+concatObservable.subscribe({
+  next: (value: any) => console.log('mergeObservable next:', value),
+  complete: () => console.warn('Complete: mergeObservable'),
+  error: (error) => console.log('Error mergeObservable', error)
+});
+
+const mergeMapExemple = timer_4.pipe(
+  mergeMap(value => of('ok - ', 'off - ', 'refused - ').pipe(
+    map((prefix: string) => {
+      return prefix + value;
+    })
+  )));
+
+mergeMapExemple.subscribe({
+  next: (value: any) => console.log('mergeMapExemple next:', value),
+  complete: () => console.warn('Complete: mergeMapExemple'),
+  error: (error) => console.log('Error mergeMapExemple', error)
+});
+
+const startWithExemple = of('Main observable start', 'Main observable works', 'Main observable finsh').pipe(
+  startWith('Before starting observsble', 'Lets start')
+);
+
+startWithExemple.subscribe(
+  {
+    next: (value: any) => console.log('startWithExemple next:', value),
+    complete: () => console.warn('Complete: startWithExemple'),
+    error: (error) => console.log('Error startWithExemple', error)
+  }
+)
+
+const withLatestFromExemple = timer_1.pipe(
+  withLatestFrom(timer_3)
+);
+
+withLatestFromExemple.subscribe(
+  {
+    next: (value: any) => console.log('withLatestFromExemple next:', value),
+    complete: () => console.warn('Complete: withLatestFromExemple'),
+    error: (error) => console.log('Error withLatestFromExemple', error)
+  }
+)
+
+const pairwiseExemple = timer(500, 250).pipe(
+  take(8),
+  pairwise()
+)
+
+pairwiseExemple.subscribe(
+  {
+    next: (value: any) => console.log('pairwiseExemple next:', value),
+    complete: () => console.warn('Complete: pairwiseExemple'),
+    error: (error) => console.log('Error pairwiseExemple', error)
+  }
+)
+
+const racer_1 = timer(5, 100).pipe(take(2), map(value => 'racer1'));
+const racer_2 = timer(0, 100).pipe(take(2), map(value => 'racer2'));
+
+const racing = race(racer_1, racer_2);
+
+racing.subscribe(
+  {
+    next: (value: any) => console.log('racing next:', value),
+    complete: () => console.warn('Complete: racing'),
+    error: (error) => console.log('Error racing', error)
+  }
 )
