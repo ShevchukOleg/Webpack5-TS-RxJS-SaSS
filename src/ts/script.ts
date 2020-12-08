@@ -59,7 +59,7 @@ promiseOnEL.then((event: KeyboardEvent) => {
 })();
 
 import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race } from 'rxjs';
-import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil, takeWhile, map, mergeMap, startWith, withLatestFrom, pairwise } from 'rxjs/operators'
+import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil, takeWhile, map, mergeMap, startWith, withLatestFrom, pairwise, pluck, mapTo, reduce, scan, flatMap, concatMap, retry, retryWhen, delay } from 'rxjs/operators'
 const observable = fromEvent(input_2, 'input');
 observable.pipe(
   debounceTime(600),
@@ -510,5 +510,116 @@ racing.subscribe(
     next: (value: any) => console.log('racing next:', value),
     complete: () => console.warn('Complete: racing'),
     error: (error) => console.log('Error racing', error)
+  }
+)
+
+const pluckExemple = of({ id: 1, name: 'John' }, { id: 2, name: 'Mary' }).pipe(
+  pluck('name')
+);
+
+pluckExemple.subscribe(
+  {
+    next: (value: any) => console.log('pluckExemple:', value),
+    complete: () => console.warn('Complete: pluckExemple'),
+    error: (error) => console.log('Error pluckExemple', error)
+  }
+)
+
+const pulsar = timer(100, 250).pipe(
+  mapTo(1),
+  takeUntil(
+    interval(1250)
+  )
+)
+
+pulsar.pipe(
+  reduce((ac, value) => ac + value, 0)
+).subscribe(
+  {
+    next: (value: any) => console.log('Reduce result:', value),
+    complete: () => console.warn('Complete: reduce'),
+    error: (error) => console.log('Error reduce', error)
+  }
+)
+
+pulsar.pipe(
+  scan((ac, value) => ac + value, 0)
+).subscribe(
+  {
+    next: (value: any) => console.log('Scan result:', value),
+    complete: () => console.warn('Complete: scan'),
+    error: (error) => console.error('Error scan', error)
+  }
+)
+
+const mapExemple = of(20, 16, 19, 22, 18, 24).pipe(
+  map((value) => {
+    return Math.abs((20 - value) / 20);
+  })
+).subscribe(
+  {
+    next: (value: any) => console.log('Map result:', value),
+    complete: () => console.warn('Complete: map'),
+    error: (error) => console.error('Error map', error)
+  }
+)
+
+const flatMapExample = timer(100, 500).pipe(
+  take(5),
+  flatMap(_ => of('a', 'b', 'c', 'd'))
+);
+
+flatMapExample.subscribe(
+  {
+    next: (value: any) => console.log('FlatMapExample result:', value),
+    complete: () => console.warn('Complete:  flatMapExample'),
+    error: (error) => console.error('Error  flatMapExample', error)
+  }
+)
+
+const switchMapExemple = of(2, 5, 10).pipe(
+  switchMap((value, i) => {
+    return of(value, value ** 2, value ** 3)
+  })
+);
+
+switchMapExemple.subscribe(
+  {
+    next: (value: any) => console.log('SwitchMapExemple result:', value),
+    complete: () => console.warn('Complete:  switchMapExemple'),
+    error: (error) => console.error('Error  switchMapExemple', error)
+  }
+)
+
+const concatMapExemple = of(2, 5, 10).pipe(
+  concatMap((value, i) => {
+    return of(value, value ** 2, value ** 3)
+  })
+);
+
+concatMapExemple.subscribe(
+  {
+    next: (value: any) => console.log('ConcatMapExemple result:', value),
+    complete: () => console.warn('Complete:  concatMapExemple'),
+    error: (error) => console.error('Error  concatMapExemple', error)
+  }
+)
+
+const throwErrorExemple = interval(100).pipe(
+  mergeMap((value) => {
+    return (value >= 5) ? throwError('Error massege') : of(value)
+  }),
+  // retry(2),
+  retryWhen((errorObservable) => {
+    console.error(errorObservable);
+    return errorObservable.pipe(delay(650));
+  })
+)
+
+throwErrorExemple.subscribe(
+  {
+    next: (value: any) => console.log('ThrowErrorExemple:', value),
+    complete: () => console.warn('Complete: throwErrorExemple'),
+    error: (error) => console.error('Error throwErrorExemple:', error)
   }
 )
