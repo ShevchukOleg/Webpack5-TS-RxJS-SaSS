@@ -58,7 +58,62 @@ promiseOnEL.then((event: KeyboardEvent) => {
   })
 })();
 
-import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race } from 'rxjs';
+// Observer patern
+
+interface Listener {
+  name: string;
+  next(message: string): void;
+}
+
+class Producer {
+  private listeners: Array<Listener> = [];
+
+  public subscribe(listener: Listener) {
+    let listenersLength = this.listeners.push(listener);
+
+    return {
+      unsubscribe: (listener: Listener) => {
+        this.listeners = this.listeners.filter((element: Listener) => {
+          return element.name !== listener.name
+        })
+      }
+    }
+  }
+
+  public notify(message: string) {
+    this.listeners.forEach(listener => listener.next(message))
+
+  }
+}
+
+const notifier = new Producer();
+
+const listener_1 = {
+  name: 'listener_1',
+  next(message: string) {
+    console.warn(this.name, message);
+  }
+}
+
+const listener_2 = {
+  name: 'listener_2',
+  next(message: string) {
+    console.warn(this.name, message);
+  }
+}
+
+const sub_1 = notifier.subscribe(listener_1);
+const sub_2 = notifier.subscribe(listener_2);
+
+notifier.notify("Notifier works");
+
+sub_1.unsubscribe(listener_1);
+
+setTimeout(() => {
+  notifier.notify("Second packet");
+}, 3000)
+
+import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race, iif, defer } from 'rxjs';
 import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil, takeWhile, map, mergeMap, startWith, withLatestFrom, pairwise, pluck, mapTo, reduce, scan, flatMap, concatMap, retry, retryWhen, delay } from 'rxjs/operators'
 const observable = fromEvent(input_2, 'input');
 observable.pipe(
@@ -86,13 +141,14 @@ const observable_1 = new Observable(
       observer.next('Another text');
       console.log(Date.now());
       observer.next('Final text');
-      setInterval(_ => {
+      const interval = setInterval(_ => {
         (counter === 3) ? unsubscribe_2() : null;
+        if (counter >= 21) {
+          clearInterval(interval);
+          observer.complete()
+        }
         observer.next(counter++);
       }, 300);
-      setTimeout(_ => {
-        observer.complete();
-      }, 1800);
     } catch (err) {
       observer.error(err);
     }
@@ -181,6 +237,36 @@ observable_Error.subscribe(
   (errorData) => console.warn(errorData),
   () => console.warn("Completed observable_empty !")
 );
+
+let random = Math.random() * 100;
+
+const decider = iif(
+  () => {
+    return random >= 51;
+  },
+  of('more than 50'),
+  of('less then 50')
+);
+
+decider.subscribe((resolution) => {
+  console.log(resolution);
+})
+
+const complexDecider = defer(function () {
+  if (random <= 50) {
+    return of('Bad result')
+  } else if (random <= 80) {
+    return of('Not bad, not bad now you')
+  } else {
+    return of('Excellent')
+  }
+});
+
+complexDecider.subscribe(
+  (nextData) => console.log("ComplexDecider observer:", nextData),
+  (errorData) => console.error('ComplexDecider error:', errorData),
+  () => console.warn("Completed complexDecider!")
+)
 
 //____________________Pipe and Intermediate data processing
 // first, last, single
