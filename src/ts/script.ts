@@ -112,9 +112,9 @@ sub_1.unsubscribe(listener_1);
 setTimeout(() => {
   notifier.notify("Second packet");
 }, 3000)
-
-import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race, iif, defer } from 'rxjs';
-import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil, takeWhile, map, mergeMap, startWith, withLatestFrom, pairwise, pluck, mapTo, reduce, scan, flatMap, concatMap, retry, retryWhen, delay } from 'rxjs/operators'
+import { ajax } from 'rxjs/ajax';
+import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race, iif, defer, Subscriber, Unsubscribable, pipe } from 'rxjs';
+import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil, takeWhile, map, mergeMap, startWith, withLatestFrom, pairwise, pluck, mapTo, reduce, scan, flatMap, concatMap, retry, retryWhen, delay, exhaust } from 'rxjs/operators'
 const observable = fromEvent(input_2, 'input');
 observable.pipe(
   debounceTime(600),
@@ -549,6 +549,24 @@ mergeMapExemple.subscribe({
   error: (error) => console.log('Error mergeMapExemple', error)
 });
 
+const inputSequence = fromEvent(input_2, 'input');
+const mergeMapExemple_2 = inputSequence.pipe(
+  debounceTime(600),
+  mergeMap(
+    (event: KeyboardEvent) => {
+      const value = (event.target as HTMLInputElement).value;
+      return ajax(`https://api.github.com/search/repositories?q=${value}`);
+    }
+  ),
+  pluck('response')
+);
+
+mergeMapExemple_2.subscribe({
+  next: (value: any) => console.log('mergeMapExemple_2 next:', value),
+  complete: () => console.warn('Complete: mergeMapExemple_2'),
+  error: (error) => console.log('Error mergeMapExemple_2', error)
+});
+
 const startWithExemple = of('Main observable start', 'Main observable works', 'Main observable finsh').pipe(
   startWith('Before starting observsble', 'Lets start')
 );
@@ -691,6 +709,20 @@ concatMapExemple.subscribe(
   }
 )
 
+const higherOrderObs = interval(Math.random() * 300).pipe(
+  map((value) => interval(1000).pipe(take(5)))
+);
+
+const exhaustExample = higherOrderObs.pipe(exhaust());
+exhaustExample.subscribe(
+  {
+    next: (value: any) => console.log('exhaustExample result:', value),
+    complete: () => console.warn('Complete:  exhaustExample'),
+    error: (error) => console.error('Error  exhaustExample', error)
+  }
+);
+
+
 const throwErrorExemple = interval(100).pipe(
   mergeMap((value) => {
     return (value >= 5) ? throwError('Error massege') : of(value)
@@ -707,5 +739,147 @@ throwErrorExemple.subscribe(
     next: (value: any) => console.log('ThrowErrorExemple:', value),
     complete: () => console.warn('Complete: throwErrorExemple'),
     error: (error) => console.error('Error throwErrorExemple:', error)
+  }
+)
+
+
+// Створення валасного оператору
+// ** 1 -- Створення простого дублюючого оператору
+function doNothing(sourceObs: Observable<any>) {
+  return sourceObs;
+}
+
+interval(500).pipe(
+  take(10),
+  doNothing
+).subscribe(
+  {
+    next: (value: any) => console.log('Test doNothing operator:', value),
+    complete: () => console.warn('Complete: doNothing operator'),
+    error: (error) => console.error('Error doNothing operator:', error)
+  }
+)
+
+// ** Оператор множення на 2
+// !! тара методика, яку замінив новий оператор
+class DoubleSubscriber extends Subscriber<number> {
+  next(value?: number): void {
+    super.next(value * 2)
+  }
+}
+
+function doubleOperator(sourceObs$: Observable<any>) {
+  const outObservable = new Observable();
+  outObservable.source = sourceObs$;
+  outObservable.operator = {
+    call(subscriber: Subscriber<unknown>, source: any): Unsubscribable | Function | void {
+      source.subscribe(new DoubleSubscriber(subscriber))
+    }
+  }
+  return outObservable;
+}
+
+function doubleOperator_lift(sourceObs$: Observable<any>) {
+  return sourceObs$.lift(
+    {
+      call(subscriber: Subscriber<unknown>, source: any): Unsubscribable | Function | void {
+        source.subscribe(new DoubleSubscriber(subscriber))
+      }
+    }
+  )
+}
+
+timer(1500, 1000).pipe(
+  doubleOperator
+).subscribe(
+  {
+    next: (value: any) => console.log('Test doubleOperator operator:', value),
+    complete: () => console.warn('Complete: doubleOperator operator'),
+    error: (error) => console.error('Error doubleOperator operator:', error)
+  }
+)
+// ?? приймає декілька функцій, повертає функцію яка приймає source: Observable<any> і вже вонаповертає резльтат обробки переліку вхідних функцій
+const pipeAnalog = (...fns: Function[]) => {
+  console.warn('pipeAnalog fns:', fns)
+  return (source: Observable<any>) => {
+    return fns.reduce(
+      (newSourse, fn) => {
+        return fn(newSourse)
+      },
+      source
+    )
+  }
+};
+
+const operatorCombination = pipe(
+  filter((value: number) => value % 2 === 0),
+  doubleOperator_lift
+)
+
+const operatorCombination_2 = pipeAnalog(
+  filter((value: number) => value % 2 === 0),
+  doubleOperator_lift
+)
+
+
+timer(1500, 1000).pipe(
+  operatorCombination_2
+).subscribe(
+  {
+    next: (value: any) => console.log('Test operatorCombination operator:', value),
+    complete: () => console.warn('Complete: operatorCombination operator'),
+    error: (error) => console.error('Error operatorCombination operator:', error)
+  }
+)
+
+
+// ** Кастомний оператор що пропускає задану кількість пакетів і потів видає вказану кількість
+
+class skipProvideSubscriber extends Subscriber<any> {
+  private count = 1;
+  private section = 1;
+
+  constructor(
+    subscriber: Subscriber<any>,
+    private skip: number,
+    private provide: number
+  ) {
+    super(subscriber)
+  }
+
+  next(value?: any): void {
+    const lowerLimit = this.section * (this.skip + this.provide) - this.provide;
+    const upperLimit = lowerLimit + this.provide;
+    if (lowerLimit < this.count && this.count <= upperLimit) {
+      this.count++;
+      super.next(value)
+      if (this.count > upperLimit) {
+        this.section++;
+      }
+      return
+    }
+    this.count++;
+  }
+}
+
+function skipProvide(skip: number, provide: number) {
+  return (source$: Observable<any>) => {
+    return source$.lift(
+      {
+        call(subscriber: Subscriber<unknown>, source: any): Unsubscribable | Function | void {
+          source.subscribe(new skipProvideSubscriber(subscriber, skip, provide))
+        }
+      }
+    )
+  }
+}
+
+interval(500).pipe(
+  skipProvide(5, 2)
+).subscribe(
+  {
+    next: (value: any) => console.warn('Test skipProvide operator:', value),
+    complete: () => console.warn('Complete: skipProvide operator'),
+    error: (error) => console.error('Error skipProvide operator:', error)
   }
 )
