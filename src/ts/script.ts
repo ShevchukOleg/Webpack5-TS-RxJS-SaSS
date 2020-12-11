@@ -30,14 +30,48 @@ const input_2 = document.querySelector('input[name="Second text"]');
 const btn_sope = document.querySelector('button#sope') as HTMLButtonElement;
 const btn_co = document.querySelector('button#co') as HTMLButtonElement;
 const btn_co_of = document.querySelector('button#co_of') as HTMLButtonElement;
-const btm_co_from = document.querySelector('button#co_from') as HTMLButtonElement;
-const btm_co_timer = document.querySelector('button#co_timer') as HTMLButtonElement;
-const btm_co_interval = document.querySelector('button#co_interval') as HTMLButtonElement;
-const btm_co_range = document.querySelector('button#co_range') as HTMLButtonElement;
+const btn_co_from = document.querySelector('button#co_from') as HTMLButtonElement;
+const btn_co_timer = document.querySelector('button#co_timer') as HTMLButtonElement;
+const btn_co_interval = document.querySelector('button#co_interval') as HTMLButtonElement;
+const btn_co_range = document.querySelector('button#co_range') as HTMLButtonElement;
+const btn_co_empty = document.querySelector('button#co_empty') as HTMLButtonElement;
+const btn_co_iif = document.querySelector('button#co_iif') as HTMLButtonElement;
+const btn_co_throwError = document.querySelector('button#co_throwError') as HTMLButtonElement;
+const btn_co_difer = document.querySelector('button#co_difer') as HTMLButtonElement;
 
 
 function toggleBtnStatusClass(btn: HTMLButtonElement) {
   btn.classList.contains('unsubscribe') ? (btn.classList.remove('unsubscribe'), btn.classList.add('create')) : btn.classList.contains('create') ? (btn.classList.remove('create'), btn.classList.add('unsubscribe')) : null;
+}
+
+function createObservsbleSample(observableExemple: Observable<any>, description: string, btn: HTMLButtonElement) {
+  let action = 'create';
+  let observable: Observable<any>;
+  let subscription: Subscription;
+  function operateObservable() {
+    if (action === 'create') {
+      action = 'unsubscribe'
+      toggleBtnStatusClass(btn);
+      btn.textContent = `Unsubscribe Observable ${description}`;
+      observable = observableExemple;
+      subscription = observable.subscribe(
+        (nextData) => console.error(`Observable ${description}:`, nextData),
+        (errorData) => console.error(`Observable ${description} error:`, errorData),
+        () => {
+          action = 'create';
+          btn.textContent = `Create + subscribe Observable ${description}`;
+          toggleBtnStatusClass(btn);
+          console.warn(`Completed observable ${description} !`);
+        }
+      );
+    } else if (action === 'unsubscribe') {
+      subscription.unsubscribe();
+      action = 'create';
+      btn_co_interval.textContent = `Create + subscribe Observable ${description}`;
+      toggleBtnStatusClass(btn);
+    }
+  }
+  return operateObservable;
 }
 
 const promiseOnEL = new Promise((resolve) => {
@@ -226,74 +260,13 @@ btn_co.addEventListener('click', createObservableInstance)
 
 //________________Методи створення Observable
 
-function createObservsbleOf() {
-  let action = 'create';
-  let observable: Observable<any>;
-  let subscription: Subscription;
-  function operateObservable() {
-    if (action === 'create') {
-      action = 'unsubscribe'
-      toggleBtnStatusClass(btn_co_of);
-      btn_co_of.textContent = 'Unsubscribe Observable of()'
-      observable = of(1, 3, 15, 67, 33, 92);
-      subscription = observable.subscribe(
-        (nextData) => console.log('Observable of():', nextData),
-        (errorData) => console.warn(errorData),
-        () => {
-          action = 'create';
-          btn_co_of.textContent = 'Create + subscribe Observable of()';
-          toggleBtnStatusClass(btn_co_of);
-          console.warn("Completed observable of() !");
-        }
-      );
-    } else if (action === 'unsubscribe') {
-      subscription.unsubscribe();
-      action = 'create';
-      btn_co_of.textContent = 'Create + subscribe Observable of()'
-      toggleBtnStatusClass(btn_co_of);
-    }
-  }
 
-  return operateObservable;
-}
-
-const createObservable_Of_Instance = createObservsbleOf();
+const createObservable_Of_Instance = createObservsbleSample(of(1, 3, 15, 67, 33, 92), 'of(...)', btn_co_of);
 btn_co_of.addEventListener('click', createObservable_Of_Instance);
 
 
-function createObservsbleFrom() {
-  let action = 'create';
-  let observable: Observable<any>;
-  let subscription: Subscription;
-  function operateObservable() {
-    if (action === 'create') {
-      action = 'unsubscribe';
-      toggleBtnStatusClass(btm_co_from);
-      btm_co_from.textContent = 'Unsubscribe Observable from()';
-      observable = from([1, 3, 15, 67, 33, 92]);
-      subscription = observable.subscribe(
-        (nextData) => console.error('Observable from():', nextData),
-        (errorData) => console.warn(errorData),
-        () => {
-          action = 'create';
-          btm_co_from.textContent = 'Create + subscribe Observable from()';
-          toggleBtnStatusClass(btm_co_from);
-          console.warn("Completed observable from() !");
-        }
-      );
-    } else if (action === 'unsubscribe') {
-      subscription.unsubscribe();
-      action = 'create';
-      btm_co_from.textContent = 'Create + subscribe Observable from()';
-      toggleBtnStatusClass(btm_co_from);
-    }
-  }
-
-  return operateObservable;
-}
-
-const createObservable_from_Instance = createObservsbleFrom();
-btm_co_from.addEventListener('click', createObservable_from_Instance);
+const createObservable_from_Instance = createObservsbleSample(from([1, 3, 15, 67, 33, 92]), 'from([...])', btn_co_from);
+btn_co_from.addEventListener('click', createObservable_from_Instance);
 
 const observable_from_Promise = from(Promise.resolve(777));
 observable_from_Promise.subscribe(
@@ -303,170 +276,59 @@ observable_from_Promise.subscribe(
 );
 
 
-const observable_interval = interval(100);
-// observable_interval.subscribe(
-//   (nextData) => console.log(nextData),
-//   (errorData) => console.warn(errorData),
-//   () => console.warn("Completed observable_interval!")
-// );
+const createObservable_timer_Instance = createObservsbleSample(timer(0, 400), 'timer()', btn_co_timer);
+btn_co_timer.addEventListener('click', createObservable_timer_Instance);
 
 
-
-function createObservsbleTimer() {
-  let action = 'create';
-  let observable: Observable<any>;
-  let subscription: Subscription;
-  function operateObservable() {
-    if (action === 'create') {
-      action = 'unsubscribe'
-      toggleBtnStatusClass(btm_co_timer);
-      btm_co_timer.textContent = 'Unsubscribe Observable timer()';
-      observable = timer(0, 400);
-      subscription = observable.subscribe(
-        (nextData) => console.log('Observable timer():', nextData),
-        (errorData) => console.warn('Observable timer() error:', errorData),
-        () => {
-          action = 'create';
-          btm_co_timer.textContent = 'Create + subscribe Observable timer()';
-          toggleBtnStatusClass(btm_co_timer);
-          console.warn("Completed observable timer() !");
-        }
-      );
-    } else if (action === 'unsubscribe') {
-      subscription.unsubscribe();
-      action = 'create';
-      btm_co_timer.textContent = 'Create + subscribe Observable timer()';
-      toggleBtnStatusClass(btm_co_timer);
-    }
-  }
-
-  return operateObservable;
-}
-
-const createObservable_timer_Instance = createObservsbleTimer();
-btm_co_timer.addEventListener('click', createObservable_timer_Instance);
+const createObservable_interval_Instance = createObservsbleSample(interval(100), 'interval()', btn_co_interval);
+btn_co_interval.addEventListener('click', createObservable_interval_Instance);
 
 
-function createObservsbleInterval() {
-  let action = 'create';
-  let observable: Observable<any>;
-  let subscription: Subscription;
-  function operateObservable() {
-    if (action === 'create') {
-      action = 'unsubscribe'
-      toggleBtnStatusClass(btm_co_interval);
-      btm_co_interval.textContent = 'Unsubscribe Observable interval()';
-      observable = interval(100);
-      subscription = observable.subscribe(
-        (nextData) => console.error('Observable interval():', nextData),
-        (errorData) => console.warn('Observable interval() error:', errorData),
-        () => {
-          action = 'create';
-          btm_co_interval.textContent = 'Create + subscribe Observable interval()';
-          toggleBtnStatusClass(btm_co_interval);
-          console.warn("Completed observable interval() !");
-        }
-      );
-    } else if (action === 'unsubscribe') {
-      subscription.unsubscribe();
-      action = 'create';
-      btm_co_interval.textContent = 'Create + subscribe Observable interval()';
-      toggleBtnStatusClass(btm_co_interval);
-    }
-  }
-  return operateObservable;
-}
+const createObservable_range_Instance = createObservsbleSample(range(0, 11), 'range()', btn_co_range);
+btn_co_range.addEventListener('click', createObservable_range_Instance);
 
-const createObservable_interval_Instance = createObservsbleInterval();
-btm_co_interval.addEventListener('click', createObservable_interval_Instance);
+const createObservable_empty_Instance = createObservsbleSample(empty(), 'empty()', btn_co_empty);
+btn_co_empty.addEventListener('click', createObservable_empty_Instance);
 
+const createObservable_throwError_Instance = createObservsbleSample(throwError('Generated error'), 'throwError(...)', btn_co_throwError);
+btn_co_throwError.addEventListener('click', createObservable_throwError_Instance);
 
-function createObservsbleRange() {
-  let action = 'create';
-  let observable: Observable<any>;
-  let subscription: Subscription;
-  function operateObservable() {
-    if (action === 'create') {
-      action = 'unsubscribe'
-      toggleBtnStatusClass(btm_co_range);
-      btm_co_range.textContent = 'Unsubscribe Observable range()';
-      observable = range(0, 11);
-      subscription = observable.subscribe(
-        (nextData) => console.log('Observable range():', nextData),
-        (errorData) => console.warn('Observable range() error:', errorData),
-        () => {
-          action = 'create';
-          btm_co_range.textContent = 'Create + subscribe Observable range(0, 11)';
-          toggleBtnStatusClass(btm_co_range);
-          console.warn("Completed observable range() !");
-        }
-      );
-    } else if (action === 'unsubscribe') {
-      subscription.unsubscribe();
-      action = 'create';
-      btm_co_range.textContent = 'Create + subscribe Observable range(0, 11)';
-      toggleBtnStatusClass(btm_co_range);
-    }
-  }
-  return operateObservable;
-}
-
-const createObservable_range_Instance = createObservsbleRange();
-btm_co_range.addEventListener('click', createObservable_range_Instance);
-
-const observable_range = range(0, 11);
-observable_range.subscribe(
-  (nextData) => console.log("Range observer:", nextData),
-  (errorData) => console.warn(errorData),
-  () => console.warn("Completed observable_range !")
-);
-
-const observable_empty = empty();
-observable_empty.subscribe(
-  (nextData) => console.log("Range observer:", nextData),
-  (errorData) => console.warn(errorData),
-  () => console.warn("Completed observable_empty !")
-);
-
-const observable_Error = throwError('Generated error');
-observable_Error.subscribe(
-  (nextData) => console.log("Range observer:", nextData),
-  (errorData) => console.warn(errorData),
-  () => console.warn("Completed observable_empty !")
-);
 
 let random = Math.random() * 100;
-
-const decider = iif(
-  () => {
-    return random >= 51;
-  },
-  of('more than 50'),
-  of('less then 50')
+const createObservable_iif_Instance = createObservsbleSample(
+  iif(
+    () => {
+      return (Math.random() * 100) >= 50;
+    },
+    of('more than 50'),
+    of('less then 50')
+  ),
+  'iif()',
+  btn_co_iif
 );
+btn_co_iif.addEventListener('click', createObservable_iif_Instance);
 
-decider.subscribe((resolution) => {
-  console.log(resolution);
-})
+const createObservable_difer_Instance = createObservsbleSample(
+  defer(function () {
+    let random = Math.random() * 100;
+    if (random <= 50) {
+      return of('Bad result')
+    } else if (random <= 80) {
+      return of('Not bad, not bad, now you?')
+    } else {
+      return of('Excellent!')
+    }
+  }),
+  'difer(...)',
+  btn_co_difer
+);
+btn_co_difer.addEventListener('click', createObservable_difer_Instance);
 
-const complexDecider = defer(function () {
-  if (random <= 50) {
-    return of('Bad result')
-  } else if (random <= 80) {
-    return of('Not bad, not bad now you')
-  } else {
-    return of('Excellent')
-  }
-});
 
-complexDecider.subscribe(
-  (nextData) => console.log("ComplexDecider observer:", nextData),
-  (errorData) => console.error('ComplexDecider error:', errorData),
-  () => console.warn("Completed complexDecider!")
-)
 
 //____________________Pipe and Intermediate data processing
 // first, last, single
+const observable_range = range(0, 11);
 const rengeProcessing = observable_range.pipe(
   filter((value) => {
     return value > 5;
