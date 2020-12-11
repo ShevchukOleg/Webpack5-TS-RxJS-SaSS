@@ -1,13 +1,41 @@
+.btn {
+  margin: 10px;
+  padding: 8px 12px;
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 3px;
+  outline: none;
+  &.create {
+    background-color: rgb(217, 245, 204);
+    border-color: rgb(112, 112, 226);
+  }
+  &.unsubscribe {
+    background-color: rgb(255, 247, 131);
+    border-color: rgb(253, 213, 102);
+  }
+}
 
-/*Scroll*/
-.chat-body, .users-listing{
-	&::-webkit-scrollbar{
-		width:4px;
-	}
-	&::-webkit-scrollbar-track{
-		background-color: var(--light-blue);
-	}
-	&::-webkit-scrollbar-thumb{
-		background-color: var(--primary);
-	}
+.d-flex {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+form {
+width: 100%;
+  label {
+    display: flex;
+    justify-content: center;
+
+    flex: 0 1 30%;
+    &:first-of-type {
+      margin-left: auto;
+      margin-right: 15px;
+    }
+    &:last-of-type {
+      margin-left: 15px;
+      margin-right: auto;
+    }
+  }
 }

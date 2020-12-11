@@ -1,3 +1,4 @@
+// ?? Webpack JS check start
 import someImage from "../assets/resource/images/DesktopWallpaper.jpg"
 import { component_1 } from "@components/component_one";
 import '../css/style.css';
@@ -20,12 +21,24 @@ class Util {
 }
 
 console.log("Id:", Util.id);
+// ??  Webpack JS check end
 
 // ___________________________ RxJS lerning
 
 const input_1 = document.querySelector('input[name="Main text"]');
 const input_2 = document.querySelector('input[name="Second text"]');
-console.log(input_1);
+const btn_sope = document.querySelector('button#sope') as HTMLButtonElement;
+const btn_co = document.querySelector('button#co') as HTMLButtonElement;
+const btn_co_of = document.querySelector('button#co_of') as HTMLButtonElement;
+const btm_co_from = document.querySelector('button#co_from') as HTMLButtonElement;
+const btm_co_timer = document.querySelector('button#co_timer') as HTMLButtonElement;
+const btm_co_interval = document.querySelector('button#co_interval') as HTMLButtonElement;
+const btm_co_range = document.querySelector('button#co_range') as HTMLButtonElement;
+
+
+function toggleBtnStatusClass(btn: HTMLButtonElement) {
+  btn.classList.contains('unsubscribe') ? (btn.classList.remove('unsubscribe'), btn.classList.add('create')) : btn.classList.contains('create') ? (btn.classList.remove('create'), btn.classList.add('unsubscribe')) : null;
+}
 
 const promiseOnEL = new Promise((resolve) => {
   input_1.addEventListener('input', (e) => {
@@ -60,61 +73,69 @@ promiseOnEL.then((event: KeyboardEvent) => {
 
 // Observer patern
 
-interface Listener {
-  name: string;
-  next(message: string): void;
-}
+function startObserverPaternExemple() {
+  interface Listener {
+    name: string;
+    next(message: string): void;
+  }
 
-class Producer {
-  private listeners: Array<Listener> = [];
+  class Producer {
+    private listeners: Array<Listener> = [];
 
-  public subscribe(listener: Listener) {
-    let listenersLength = this.listeners.push(listener);
+    public subscribe(listener: Listener) {
+      let listenersLength = this.listeners.push(listener);
 
-    return {
-      unsubscribe: (listener: Listener) => {
-        this.listeners = this.listeners.filter((element: Listener) => {
-          return element.name !== listener.name
-        })
+      return {
+        unsubscribe: (listener: Listener) => {
+          this.listeners = this.listeners.filter((element: Listener) => {
+            return element.name !== listener.name
+          })
+        }
       }
+    }
+
+    public notify(message: string) {
+      this.listeners.forEach(listener => listener.next(message))
+
     }
   }
 
-  public notify(message: string) {
-    this.listeners.forEach(listener => listener.next(message))
+  const notifier = new Producer();
 
+  const listener_1 = {
+    name: 'listener_1',
+    next(message: string) {
+      console.error(this.name, message);
+    }
   }
+
+  const listener_2 = {
+    name: 'listener_2',
+    next(message: string) {
+      console.error(this.name, message);
+    }
+  }
+
+  const sub_1 = notifier.subscribe(listener_1);
+  const sub_2 = notifier.subscribe(listener_2);
+
+  notifier.notify("Notifier works");
+
+  sub_1.unsubscribe(listener_1);
+
+  setTimeout(() => {
+    // btn_sope.removeEventListener('click', startObserverPaternExemple)
+    notifier.notify("Second packet");
+  }, 3000)
 }
 
-const notifier = new Producer();
+btn_sope.addEventListener('click', startObserverPaternExemple);
 
-const listener_1 = {
-  name: 'listener_1',
-  next(message: string) {
-    console.warn(this.name, message);
-  }
-}
 
-const listener_2 = {
-  name: 'listener_2',
-  next(message: string) {
-    console.warn(this.name, message);
-  }
-}
-
-const sub_1 = notifier.subscribe(listener_1);
-const sub_2 = notifier.subscribe(listener_2);
-
-notifier.notify("Notifier works");
-
-sub_1.unsubscribe(listener_1);
-
-setTimeout(() => {
-  notifier.notify("Second packet");
-}, 3000)
 import { ajax } from 'rxjs/ajax';
-import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race, iif, defer, Subscriber, Unsubscribable, pipe } from 'rxjs';
+import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race, iif, defer, Subscriber, Unsubscribable, pipe, Subscription } from 'rxjs';
 import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil, takeWhile, map, mergeMap, startWith, withLatestFrom, pairwise, pluck, mapTo, reduce, scan, flatMap, concatMap, retry, retryWhen, delay, exhaust } from 'rxjs/operators'
+
 const observable = fromEvent(input_2, 'input');
 observable.pipe(
   debounceTime(600),
@@ -133,68 +154,146 @@ observable.pipe(
 import { Observable, Observer, } from 'rxjs';
 
 //Створення нового observable
-const observable_1 = new Observable(
-  function subscriber(observer: Observer<string | number>) {
-    try {
-      let counter = 0;
-      observer.next('Some text');
-      observer.next('Another text');
-      console.log(Date.now());
-      observer.next('Final text');
-      const interval = setInterval(_ => {
-        (counter === 3) ? unsubscribe_2() : null;
-        if (counter >= 21) {
-          clearInterval(interval);
-          observer.complete()
+
+function createObservable() {
+  let action = 'create';
+  let observable_1: Observable<any>;
+  let subscription_1: Subscription;
+  let subscription_2: Subscription;
+  function operateObservable() {
+    if (action === 'create') {
+      observable_1 = new Observable(
+
+        function subscriber(observer: Observer<string | number>) {
+          try {
+            let counter = 0;
+            observer.next('Some text');
+            observer.next('Another text');
+            console.log(Date.now());
+            observer.next('Final text');
+            const interval = setInterval(_ => {
+              (counter === 3) ? unsubscribe_2() : null;
+              if (counter >= 21) {
+                clearInterval(interval);
+                observer.complete()
+              }
+              observer.next(counter++);
+            }, 300);
+          } catch (err) {
+            observer.error(err);
+          }
         }
-        observer.next(counter++);
-      }, 300);
-    } catch (err) {
-      observer.error(err);
+      )
+
+      subscription_1 = observable_1.subscribe(
+        (nextData) => console.log("observable_1:", nextData),
+        (errorData) => console.warn(errorData),
+        () => console.warn("Completed observable_1 !")
+      );
+
+      subscription_2 = observable_1.subscribe(
+        (nextData) => console.log("observable_2:", nextData),
+        (errorData) => console.warn(errorData),
+        () => console.warn("Completed observable_2 !")
+      )
+
+      function unsubscribe_2() {
+        subscription_2.unsubscribe();
+        console.warn('subscription_2 unsubscribed!')
+      }
+
+      setTimeout(() => {
+        subscription_1.unsubscribe();
+        console.warn('subscription_1 unsubscribed!')
+      }, 5000)
+      action = 'unsubscribe'
+      btn_co.textContent = 'Unsubscribe Observable'
+    } else if (action === 'unsubscribe') {
+      action = 'create';
+      subscription_1.unsubscribe();
+      subscription_2.unsubscribe();
+      console.warn('subscription_1 unsubscribed!');
+      btn_co.textContent = 'Create + subscribe Observable'
     }
+    toggleBtnStatusClass(btn_co);
   }
-)
-
-
-const subscription_1 = observable_1.subscribe(
-  (nextData) => console.log("observable_1:", nextData),
-  (errorData) => console.warn(errorData),
-  () => console.warn("Completed observable_1 !")
-);
-
-const subscription_2 = observable_1.subscribe(
-  (nextData) => console.log("observable_2:", nextData),
-  (errorData) => console.warn(errorData),
-  () => console.warn("Completed observable_2 !")
-)
-
-function unsubscribe_2() {
-  subscription_2.unsubscribe();
-  console.warn('subscription_2 unsubscribed!')
+  return operateObservable;
 }
 
-setTimeout(() => {
-  subscription_1.unsubscribe();
-  console.warn('subscription_1 unsubscribed!')
-}, 5000)
+const createObservableInstance = createObservable()
 
+btn_co.addEventListener('click', createObservableInstance)
 
 //________________Методи створення Observable
 
-const observable_2 = of(1, 3, 15, 67, 33, 92);
-observable_2.subscribe(
-  (nextData) => console.log(nextData),
-  (errorData) => console.warn(errorData),
-  () => console.warn("Completed observable_2 !")
-);
+function createObservsbleOf() {
+  let action = 'create';
+  let observable: Observable<any>;
+  let subscription: Subscription;
+  function operateObservable() {
+    if (action === 'create') {
+      action = 'unsubscribe'
+      toggleBtnStatusClass(btn_co_of);
+      btn_co_of.textContent = 'Unsubscribe Observable of()'
+      observable = of(1, 3, 15, 67, 33, 92);
+      subscription = observable.subscribe(
+        (nextData) => console.log('Observable of():', nextData),
+        (errorData) => console.warn(errorData),
+        () => {
+          action = 'create';
+          btn_co_of.textContent = 'Create + subscribe Observable of()';
+          toggleBtnStatusClass(btn_co_of);
+          console.warn("Completed observable of() !");
+        }
+      );
+    } else if (action === 'unsubscribe') {
+      subscription.unsubscribe();
+      action = 'create';
+      btn_co_of.textContent = 'Create + subscribe Observable of()'
+      toggleBtnStatusClass(btn_co_of);
+    }
+  }
 
-const observable_3 = from([1, 3, 15, 67, 33, 92]);
+  return operateObservable;
+}
 
-observable_3.subscribe(
-  (nextData) => console.log(nextData),
-  (errorData) => console.warn(errorData),
-  () => console.warn("Completed observable_3 !")
-);
+const createObservable_Of_Instance = createObservsbleOf();
+btn_co_of.addEventListener('click', createObservable_Of_Instance);
+
+
+function createObservsbleFrom() {
+  let action = 'create';
+  let observable: Observable<any>;
+  let subscription: Subscription;
+  function operateObservable() {
+    if (action === 'create') {
+      action = 'unsubscribe';
+      toggleBtnStatusClass(btm_co_from);
+      btm_co_from.textContent = 'Unsubscribe Observable from()';
+      observable = from([1, 3, 15, 67, 33, 92]);
+      subscription = observable.subscribe(
+        (nextData) => console.error('Observable from():', nextData),
+        (errorData) => console.warn(errorData),
+        () => {
+          action = 'create';
+          btm_co_from.textContent = 'Create + subscribe Observable from()';
+          toggleBtnStatusClass(btm_co_from);
+          console.warn("Completed observable from() !");
+        }
+      );
+    } else if (action === 'unsubscribe') {
+      subscription.unsubscribe();
+      action = 'create';
+      btm_co_from.textContent = 'Create + subscribe Observable from()';
+      toggleBtnStatusClass(btm_co_from);
+    }
+  }
+
+  return operateObservable;
+}
+
+const createObservable_from_Instance = createObservsbleFrom();
+btm_co_from.addEventListener('click', createObservable_from_Instance);
 
 const observable_from_Promise = from(Promise.resolve(777));
 observable_from_Promise.subscribe(
@@ -203,7 +302,7 @@ observable_from_Promise.subscribe(
   () => console.warn("Completed observable_from_Promise !")
 );
 
-const observable_timer = timer(0, 400)
+
 const observable_interval = interval(100);
 // observable_interval.subscribe(
 //   (nextData) => console.log(nextData),
@@ -211,11 +310,109 @@ const observable_interval = interval(100);
 //   () => console.warn("Completed observable_interval!")
 // );
 
-// observable_timer.subscribe(
-//   (nextData) => console.log(nextData),
-//   (errorData) => console.warn(errorData),
-//   () => console.warn("Completed observable_2 !")
-// );
+
+
+function createObservsbleTimer() {
+  let action = 'create';
+  let observable: Observable<any>;
+  let subscription: Subscription;
+  function operateObservable() {
+    if (action === 'create') {
+      action = 'unsubscribe'
+      toggleBtnStatusClass(btm_co_timer);
+      btm_co_timer.textContent = 'Unsubscribe Observable timer()';
+      observable = timer(0, 400);
+      subscription = observable.subscribe(
+        (nextData) => console.log('Observable timer():', nextData),
+        (errorData) => console.warn('Observable timer() error:', errorData),
+        () => {
+          action = 'create';
+          btm_co_timer.textContent = 'Create + subscribe Observable timer()';
+          toggleBtnStatusClass(btm_co_timer);
+          console.warn("Completed observable timer() !");
+        }
+      );
+    } else if (action === 'unsubscribe') {
+      subscription.unsubscribe();
+      action = 'create';
+      btm_co_timer.textContent = 'Create + subscribe Observable timer()';
+      toggleBtnStatusClass(btm_co_timer);
+    }
+  }
+
+  return operateObservable;
+}
+
+const createObservable_timer_Instance = createObservsbleTimer();
+btm_co_timer.addEventListener('click', createObservable_timer_Instance);
+
+
+function createObservsbleInterval() {
+  let action = 'create';
+  let observable: Observable<any>;
+  let subscription: Subscription;
+  function operateObservable() {
+    if (action === 'create') {
+      action = 'unsubscribe'
+      toggleBtnStatusClass(btm_co_interval);
+      btm_co_interval.textContent = 'Unsubscribe Observable interval()';
+      observable = interval(100);
+      subscription = observable.subscribe(
+        (nextData) => console.error('Observable interval():', nextData),
+        (errorData) => console.warn('Observable interval() error:', errorData),
+        () => {
+          action = 'create';
+          btm_co_interval.textContent = 'Create + subscribe Observable interval()';
+          toggleBtnStatusClass(btm_co_interval);
+          console.warn("Completed observable interval() !");
+        }
+      );
+    } else if (action === 'unsubscribe') {
+      subscription.unsubscribe();
+      action = 'create';
+      btm_co_interval.textContent = 'Create + subscribe Observable interval()';
+      toggleBtnStatusClass(btm_co_interval);
+    }
+  }
+  return operateObservable;
+}
+
+const createObservable_interval_Instance = createObservsbleInterval();
+btm_co_interval.addEventListener('click', createObservable_interval_Instance);
+
+
+function createObservsbleRange() {
+  let action = 'create';
+  let observable: Observable<any>;
+  let subscription: Subscription;
+  function operateObservable() {
+    if (action === 'create') {
+      action = 'unsubscribe'
+      toggleBtnStatusClass(btm_co_range);
+      btm_co_range.textContent = 'Unsubscribe Observable range()';
+      observable = range(0, 11);
+      subscription = observable.subscribe(
+        (nextData) => console.log('Observable range():', nextData),
+        (errorData) => console.warn('Observable range() error:', errorData),
+        () => {
+          action = 'create';
+          btm_co_range.textContent = 'Create + subscribe Observable range(0, 11)';
+          toggleBtnStatusClass(btm_co_range);
+          console.warn("Completed observable range() !");
+        }
+      );
+    } else if (action === 'unsubscribe') {
+      subscription.unsubscribe();
+      action = 'create';
+      btm_co_range.textContent = 'Create + subscribe Observable range(0, 11)';
+      toggleBtnStatusClass(btm_co_range);
+    }
+  }
+  return operateObservable;
+}
+
+const createObservable_range_Instance = createObservsbleRange();
+btm_co_range.addEventListener('click', createObservable_range_Instance);
 
 const observable_range = range(0, 11);
 observable_range.subscribe(

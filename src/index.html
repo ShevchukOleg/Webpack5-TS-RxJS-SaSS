@@ -5,14 +5,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="icon" href="./assets/icons/favicon.ico" type="image/ico">
-  <title><%= htmlWebpackPlugin.options.title %></title>
+  <title>
+    <%= htmlWebpackPlugin.options.title %>
+  </title>
 </head>
 
 <body>
   <p>Hallo world 88</p>
   <pre></pre>
-  <input type="text" name="Main text">
-  <input type="text" name="Second text">
+  <form class="d-flex">
+    <label><input type="text" name="Main text">Promise procesing input</label>
+    <label><input type="text" name="Second text">RxJS processing input</label>
+  </form>
+  <button id="sope" class='btn '>Start ObserverPaternExemple()</button>
+  <button id="co" class='btn create'>Create + subscribe Observable</button>
+  <button id="co_of" class='btn create'>Create + subscribe Observable of()</button>
+  <button id="co_from" class='btn create'>Create + subscribe Observable from()</button>
+  <button id="co_timer" class='btn create'>Create + subscribe Observable timer(0, 400)</button>
+  <button id="co_interval" class='btn create'>Create + subscribe Observable interval(100)</button>
+  <button id="co_range" class='btn create'>Create + subscribe Observable range(0, 11)</button>
 </body>
 
 </html>
