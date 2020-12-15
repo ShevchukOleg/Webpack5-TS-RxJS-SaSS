@@ -37,7 +37,15 @@ const btn_co_range = document.querySelector('button#co_range') as HTMLButtonElem
 const btn_co_empty = document.querySelector('button#co_empty') as HTMLButtonElement;
 const btn_co_iif = document.querySelector('button#co_iif') as HTMLButtonElement;
 const btn_co_throwError = document.querySelector('button#co_throwError') as HTMLButtonElement;
-const btn_co_difer = document.querySelector('button#co_difer') as HTMLButtonElement;
+const btn_co_defer = document.querySelector('button#co_defer') as HTMLButtonElement;
+const btn_co_range_filter = document.querySelector('button#co_range_filter') as HTMLButtonElement;
+const btn_co_from_duc = document.querySelector('button#co_from_duc') as HTMLButtonElement;
+const btn_co_range_first = document.querySelector('button#co_range_first') as HTMLButtonElement;
+const btn_co_range_last = document.querySelector('button#co_range_last') as HTMLButtonElement;
+const btn_co_range_single = document.querySelector('button#co_range_single') as HTMLButtonElement;
+const btn_co_range_single_mono = document.querySelector('button#co_range_single_mono') as HTMLButtonElement;
+const btn_co_from_single_mono = document.querySelector('button#co_from_single_mono') as HTMLButtonElement;
+const btn_co_from_single_poly = document.querySelector('button#co_from_single_poly') as HTMLButtonElement;
 
 
 function toggleBtnStatusClass(btn: HTMLButtonElement) {
@@ -72,6 +80,46 @@ function createObservsbleSample(observableExemple: Observable<any>, description:
     }
   }
   return operateObservable;
+}
+
+function subscribe_with_pipeline(observableExemple: Observable<any>, description: string, pipeLine: any, btn: HTMLButtonElement) {
+  let action = 'create';
+  let observable: Observable<any>;
+  let subscription: Subscription;
+
+
+  function createObservablewithPipeLine() {
+    if (action === 'create') {
+      action = 'unsubscribe'
+      toggleBtnStatusClass(btn);
+      btn.textContent = `Unsubscribe Observable ${description}`;
+      observable = observableExemple;
+      subscription = observable.pipe(pipeLine).subscribe(
+        (nextData) => console.error(`Observable ${description}:`, nextData),
+        (errorData) => console.error(`Observable ${description} error:`, errorData),
+        () => {
+          action = 'create';
+          btn.textContent = `Create Observable + subscribtion: ${description}`;
+          toggleBtnStatusClass(btn);
+          console.warn(`Completed observable ${description} !`);
+        }
+      )
+    } else if (action === 'unsubscribe') {
+      subscription.unsubscribe();
+      action = 'create';
+      btn_co_interval.textContent = `Create Observable + subscribtion:  ${description}`;
+      toggleBtnStatusClass(btn);
+    }
+  }
+  observable_range.pipe(
+    filter((value) => {
+      return value > 5;
+    })
+  ).subscribe(
+    (value) => console.log('Filtering renge', value)
+  )
+
+  return createObservablewithPipeLine;
 }
 
 const promiseOnEL = new Promise((resolve) => {
@@ -167,8 +215,27 @@ btn_sope.addEventListener('click', startObserverPaternExemple);
 
 
 import { ajax } from 'rxjs/ajax';
-import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race, iif, defer, Subscriber, Unsubscribable, pipe, Subscription } from 'rxjs';
+import { fromEvent, of, from, timer, interval, range, empty, throwError, combineLatest, zip, forkJoin, concat, merge, race, iif, defer, Subscriber, Unsubscribable, pipe, Subscription, Subject, BehaviorSubject, ReplaySubject, AsyncSubject } from 'rxjs';
 import { switchMap, debounceTime, filter, ignoreElements, first, last, single, find, debounce, distinctUntilChanged, throttle, throttleTime, auditTime, audit, skip, skipUntil, take, takeUntil, takeWhile, map, mergeMap, startWith, withLatestFrom, pairwise, pluck, mapTo, reduce, scan, flatMap, concatMap, retry, retryWhen, delay, exhaust } from 'rxjs/operators'
+
+
+// ** Поєднання підписок:
+
+const intervalObs_1 = interval(500);
+const intervalObs_2 = interval(400);
+
+
+const mainSubscription = intervalObs_1.subscribe(x => console.log('first: ' + x));
+const childSubscription = intervalObs_2.subscribe(x => console.log('second: ' + x));
+
+mainSubscription.add(childSubscription);
+
+setTimeout(() => {
+  // Unsubscribes BOTH subscription and childSubscription
+  mainSubscription.unsubscribe();
+}, 1500);
+
+
 
 const observable = fromEvent(input_2, 'input');
 observable.pipe(
@@ -308,7 +375,7 @@ const createObservable_iif_Instance = createObservsbleSample(
 );
 btn_co_iif.addEventListener('click', createObservable_iif_Instance);
 
-const createObservable_difer_Instance = createObservsbleSample(
+const createObservable_defer_Instance = createObservsbleSample(
   defer(function () {
     let random = Math.random() * 100;
     if (random <= 50) {
@@ -319,39 +386,45 @@ const createObservable_difer_Instance = createObservsbleSample(
       return of('Excellent!')
     }
   }),
-  'difer(...)',
-  btn_co_difer
+  'defer(...)',
+  btn_co_defer
 );
-btn_co_difer.addEventListener('click', createObservable_difer_Instance);
+btn_co_defer.addEventListener('click', createObservable_defer_Instance);
 
 
 
 //____________________Pipe and Intermediate data processing
 // first, last, single
 const observable_range = range(0, 11);
-const rengeProcessing = observable_range.pipe(
-  filter((value) => {
+const range_filter = subscribe_with_pipeline(
+  observable_range,
+  'range + filter',
+  pipe(filter((value) => {
     return value > 5;
-  })
-).subscribe(
-  (value) => console.log('Filtering renge', value)
-)
+  })),
+  btn_co_range_filter);
+btn_co_range_filter.addEventListener('click', range_filter);
 
-const rengeProcessing_distinctUntilChanged = from([13, 13, 13, 16, 9, 25, 9, 9, 16, 25, 13]).pipe(
-  distinctUntilChanged()
-).subscribe(
-  (nextData) => console.log("distinctUntilChanged", nextData),
-  (errorData) => console.warn(errorData),
-  () => console.warn("Completed distinctUntilChanged!")
-)
 
-const rengeProcessing_first = observable_range.pipe(
-  first((value: number) => {
-    return (value > 6);
-  }, 0)
-).subscribe(
-  (value) => console.log('Filter first renge:', value)
-)
+const rengeProcessing_distinctUntilChanged = subscribe_with_pipeline(
+  from([13, 13, 13, 16, 9, 25, 9, 9, 16, 25, 13]),
+  'from() + distinctUntilChanged()',
+  pipe(distinctUntilChanged()),
+  btn_co_from_duc
+);
+btn_co_from_duc.addEventListener('click', rengeProcessing_distinctUntilChanged);
+
+const rangeProcessing_first = subscribe_with_pipeline(
+  observable_range,
+  'range() + first()',
+  pipe(
+    first((value: number) => {
+      return (value > 6);
+    }, 0)
+  ),
+  btn_co_range_first
+);
+btn_co_range_first.addEventListener('click', rangeProcessing_first);
 
 const clicks: Observable<Event> = fromEvent(document, 'click');
 const result = clicks.pipe(first(
@@ -362,50 +435,70 @@ const result = clicks.pipe(first(
 ));
 result.subscribe(x => console.log("Input first click: ", x));
 
-const rengeProcessing_last = observable_range.pipe(
-  last((value: number) => {
-    return (value < 5);
-  }, 0)
-).subscribe(
-  (value) => console.log('Filter last renge:', value)
+
+const rengeProcessing_last = subscribe_with_pipeline(
+  observable_range,
+  'range() + last(...value < 5)',
+  pipe(
+    last((value: number) => {
+      return (value < 5);
+    }, 0)
+  ),
+  btn_co_range_last
+);
+btn_co_range_last.addEventListener('click', rengeProcessing_last);
+
+const rengeProcessing_single = subscribe_with_pipeline(
+  observable_range,
+  'range(pily) + single(poly)',
+  pipe(
+    single((value: number, index, SourseObservable) => {
+      return (value < 5);
+    })
+  ),
+  btn_co_range_single
 )
 
-const rengeProcessing_single = observable_range.pipe(
-  single((value: number, index, SourseObservable) => {
-    return (value < 5);
-  })
-).subscribe(
-  (value) => console.log('Filter last renge:', value),
-  (error) => console.warn(error)
+btn_co_range_single.addEventListener('click', rengeProcessing_single);
+
+
+const rengeProcessing_single_2 = subscribe_with_pipeline(
+  observable_range,
+  'range(pily) + single(mono)',
+  pipe(
+    single((value: number, index, SourseObservable) => {
+      return (value === 5);
+    })
+  ),
+  btn_co_range_single_mono
+);
+
+btn_co_range_single_mono.addEventListener('click', rengeProcessing_single_2);
+
+const fromProcessing_single_3 = subscribe_with_pipeline(
+  from([1, 3, 5, 67, 5, 92]),
+  'from() + single(mono)',
+  pipe(
+    single((value: number, index, SourseObservable) => {
+      return (value === 5);
+    })
+  ),
+  btn_co_from_single_mono
 )
+btn_co_from_single_mono.addEventListener('click', fromProcessing_single_3);
 
 
-const rengeProcessing_single_2 = observable_range.pipe(
-  single((value: number, index, SourseObservable) => {
-    return (value === 5);
-  })
-).subscribe(
-  (value) => console.log('Filter single_2 renge:', value),
-  (error) => console.warn(error)
-)
 
-const fromProcessing_single_3 = from([1, 3, 5, 67, 5, 92]).pipe(
-  single((value: number, index, SourseObservable) => {
-    return (value === 5);
-  })
-).subscribe(
-  (value) => console.log('Filter single_3 renge:', value),
-  (error) => console.warn('Filter single_3 renge:', error)
-)
-
-const rengeProcessing_single_4 = observable_range.pipe(
-  single((value: number, index, SourseObservable) => {
+const rengeProcessing_single_4 = subscribe_with_pipeline(
+  observable_range,
+  'range(...to 10) + single(poly)',
+  pipe(single((value: number, index, SourseObservable) => {
     return (value === 100);
-  })
-).subscribe(
-  (value) => console.log('Filter single_4 renge:', value),
-  (error) => console.warn('Filter single_4 renge:', error)
+  })),
+  btn_co_from_single_poly
 )
+
+btn_co_from_single_poly.addEventListener('click', rengeProcessing_single_4);
 
 const rengeProcessing_find = observable_range.pipe(
   find((value: number) => {
@@ -942,3 +1035,73 @@ interval(500).pipe(
     error: (error) => console.error('Error skipProvide operator:', error)
   }
 )
+
+// ** Subject
+const subject = new Subject<number>();
+subject.subscribe({
+  next: (v) => console.log(`observerA: ${v}`)
+});
+subject.subscribe({
+  next: (v) => console.log(`observerB: ${v}`)
+});
+const fromObs = from([1, 2, 3]);
+
+fromObs.subscribe(subject);
+
+// ** BehaviorSubject
+const bsExample = new BehaviorSubject(0);
+const subscriptionBs_1 = bsExample.subscribe(
+  {
+    next: (value: any) => console.warn('Test BehaviorSubject:', value),
+    complete: () => console.warn('Complete: BehaviorSubject'),
+    error: (error) => console.error('Error BehaviorSubject :', error)
+  }
+);
+
+bsExample.next(1);
+bsExample.next(2);
+
+const subscriptionBs_2 = bsExample.subscribe(
+  {
+    next: (value: any) => console.warn('Test BehaviorSubject:', value),
+    complete: () => console.warn('Complete: BehaviorSubject'),
+    error: (error) => console.error('Error BehaviorSubject :', error)
+  }
+);
+
+// ** ReplaySubject
+
+const rsExapmle = new ReplaySubject(5, 500); // buffer 3 values for new subscribers
+
+rsExapmle.subscribe({
+  next: (v) => console.log(`observerA: ${v}`)
+});
+
+let rsIterator = 1;
+
+setInterval(() => subject.next(rsIterator++), 200);
+
+setTimeout(() => {
+  subject.subscribe({
+    next: (v) => console.log(`observerB: ${v}`)
+  });
+}, 1000);
+
+// ** AsyncSubject
+const asExample = new AsyncSubject();
+
+asExample.subscribe({
+  next: (v) => console.log(`observerA: ${v}`)
+});
+
+asExample.next(1);
+asExample.next(2);
+asExample.next(3);
+asExample.next(4);
+
+asExample.subscribe({
+  next: (v) => console.log(`observerB: ${v}`)
+});
+
+asExample.next(5);
+asExample.complete();
