@@ -1,43 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link rel="icon" href="./assets/icons/favicon.ico" type="image/ico" />
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="icon" href="./assets/icons/favicon.ico" type="image/ico">
-  <title>
-    <%= htmlWebpackPlugin.options.title %>
-  </title>
-</head>
-
-<body>
-  <p>Hallo world 88</p>
-  <pre></pre>
-  <form class="d-flex">
-    <label><input type="text" name="Main text">Promise procesing input</label>
-    <label><input type="text" name="Second text">RxJS processing input</label>
-  </form>
-  <button id="sope" class='btn '>Start ObserverPaternExemple()</button>
-  <button id="co" class='btn create'>Create + subscribe Observable</button>
-  <button id="co_of" class='btn create'>Create + subscribe Observable of()</button>
-  <button id="co_from" class='btn create'>Create + subscribe Observable from()</button>
-  <button id="co_timer" class='btn create'>Create + subscribe Observable timer(0, 400)</button>
-  <button id="co_interval" class='btn create'>Create + subscribe Observable interval(100)</button>
-  <button id="co_range" class='btn create'>Create + subscribe Observable range(0, 11)</button>
-  <button id="co_empty" class='btn create'>Create + subscribe Observable empty()</button>
-  <button id="co_throwError" class='btn create'>Create + subscribe Observable throwError()</button>
-  <button id="co_iif" class='btn create'>Create + subscribe Observable iif()</button>
-  <button id="co_defer" class='btn create'>Create + subscribe Observable difer()</button>
-  <button id="co_range_filter" class='btn create'>Create Observable + subscribtion: range() + filter </button>
-  <button id="co_from_duc" class='btn create'>Create Observable + subscribtion: from() + distinctUntilChanged()</button>
-  <button id="co_range_first" class='btn create'>Create Observable + subscribtion: range() + first()</button>
-  <button id="co_range_last" class='btn create'>Create Observable + subscribtion: range() + last(...value &lt;
-    5)</button>
-  <button id="co_range_single" class='btn create'>Create Observable + subscribtion: range(poly) + single(poly)</button>
-  <button id="co_range_single_mono" class='btn create'>Create Observable + subscribtion: range() + single(mono)</button>
-  <button id="co_from_single_mono" class='btn create'>Create Observable + subscribtion: from() + single(mono)</button>
-  <button id="co_from_single_poly" class='btn create'>Create Observable + subscribtion: range(...to 10) +
-    single(poly)</button>
-</body>
-
+  <body>
+    <p>Hallo world 88</p>
+    <pre></pre>
+    <form class="d-flex">
+      <label
+        ><input type="text" name="Main text" />Promise procesing input</label
+      >
+      <label
+        ><input type="text" name="Second text" />RxJS processing input</label
+      >
+    </form>
+    <button id="sope" class="btn">Start ObserverPaternExemple()</button>
+    <button id="co" class="btn create">Create + subscribe Observable</button>
+    <button id="co_of" class="btn create">
+      Create + subscribe Observable of()
+    </button>
+    <button id="co_from" class="btn create">
+      Create + subscribe Observable from()
+    </button>
+    <button id="co_timer" class="btn create">
+      Create + subscribe Observable timer(0, 400)
+    </button>
+    <button id="co_interval" class="btn create">
+      Create + subscribe Observable interval(100)
+    </button>
+    <button id="co_range" class="btn create">
+      Create + subscribe Observable range(0, 11)
+    </button>
+    <button id="co_empty" class="btn create">
+      Create + subscribe Observable empty()
+    </button>
+    <button id="co_throwError" class="btn create">
+      Create + subscribe Observable throwError()
+    </button>
+    <button id="co_iif" class="btn create">
+      Create + subscribe Observable iif()
+    </button>
+    <button id="co_defer" class="btn create">
+      Create + subscribe Observable difer()
+    </button>
+    <button id="co_range_filter" class="btn create">
+      Create Observable + subscribtion: range() + filter
+    </button>
+    <button id="co_from_duc" class="btn create">
+      Create Observable + subscribtion: from() + distinctUntilChanged()
+    </button>
+    <button id="co_range_first" class="btn create">
+      Create Observable + subscribtion: range() + first()
+    </button>
+    <button id="co_range_last" class="btn create">
+      Create Observable + subscribtion: range() + last(...value &lt; 5)
+    </button>
+    <button id="co_range_single" class="btn create">
+      Create Observable + subscribtion: range(poly) + single(poly)
+    </button>
+    <button id="co_range_single_mono" class="btn create">
+      Create Observable + subscribtion: range() + single(mono)
+    </button>
+    <button id="co_from_single_mono" class="btn create">
+      Create Observable + subscribtion: from() + single(mono)
+    </button>
+    <button id="co_from_single_poly" class="btn create">
+      Create Observable + subscribtion: range(...to 10) + single(poly)
+    </button>
+    <ul>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul>
+  </body>
 </html>
