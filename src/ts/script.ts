@@ -14,15 +14,6 @@ async function start() {
   return await Promise.resolve("Async is working good");
 }
 
-function identity<T, U>(value: T, quality: U): T {
-  if (quality) {
-    console.log(typeof quality);
-  }
-  return value;
-}
-
-console.log(identity<Number, string[]>(1, ["one"])); // 1
-
 start().then(console.log);
 
 class Util {
@@ -32,10 +23,16 @@ class Util {
 console.log("Id:", Util.id);
 // ??  Webpack JS check end
 
-// ___________________________ RxJS lerning
+//!! ___________________________ RxJS lerning
 
+// DOM controll elements list
 const input_1 = document.querySelector('input[name="Main text"]');
 const input_2 = document.querySelector('input[name="Second text"]');
+/**
+ *  Start startObserverPaternExemple that create 2 protoObservable than emite event. in console we see two
+ * notification, then we unsubscribe frome first protoObservable and after 3 seconds second event emites
+ *  => only second protoObservable make notification
+ */
 const btn_sope = document.querySelector("button#sope") as HTMLButtonElement;
 const btn_co = document.querySelector("button#co") as HTMLButtonElement;
 const btn_co_of = document.querySelector("button#co_of") as HTMLButtonElement;
@@ -86,7 +83,7 @@ const btn_co_from_single_poly = document.querySelector(
   "button#co_from_single_poly"
 ) as HTMLButtonElement;
 
-function toggleBtnStatusClass(btn: HTMLButtonElement) {
+function toggleBtnStatusClass(btn: HTMLButtonElement): void {
   btn.classList.contains("unsubscribe")
     ? (btn.classList.remove("unsubscribe"), btn.classList.add("create"))
     : btn.classList.contains("create")
@@ -94,7 +91,7 @@ function toggleBtnStatusClass(btn: HTMLButtonElement) {
     : null;
 }
 
-function createObservsbleSample(
+function createObservableSample(
   observableExemple: Observable<any>,
   description: string,
   btn: HTMLButtonElement
@@ -109,9 +106,9 @@ function createObservsbleSample(
       btn.textContent = `Unsubscribe Observable ${description}`;
       observable = observableExemple;
       subscription = observable.subscribe({
-        next: (nextData) =>
+        next: (nextData: any) =>
           console.error(`Observable ${description}:`, nextData),
-        error: (errorData) =>
+        error: (errorData: any) =>
           console.error(`Observable ${description} error:`, errorData),
         complete: () => {
           action = "create";
@@ -165,7 +162,7 @@ function subscribe_with_pipeline(
       toggleBtnStatusClass(btn);
     }
   }
-
+  //  sequence of numbers Observable
   observable_range
     .pipe(
       filter((value) => {
@@ -453,14 +450,14 @@ btn_co.addEventListener("click", createObservableInstance);
 
 //________________Методи створення Observable
 
-const createObservable_Of_Instance = createObservsbleSample(
+const createObservable_Of_Instance = createObservableSample(
   of(1, 3, 15, 67, 33, 92),
   "of(...)",
   btn_co_of
 );
 btn_co_of.addEventListener("click", createObservable_Of_Instance);
 
-const createObservable_from_Instance = createObservsbleSample(
+const createObservable_from_Instance = createObservableSample(
   from([1, 3, 15, 67, 33, 92]),
   "from([...])",
   btn_co_from
@@ -474,35 +471,35 @@ observable_from_Promise.subscribe(
   () => console.warn("Completed observable_from_Promise !")
 );
 
-const createObservable_timer_Instance = createObservsbleSample(
+const createObservable_timer_Instance = createObservableSample(
   timer(0, 400),
   "timer()",
   btn_co_timer
 );
 btn_co_timer.addEventListener("click", createObservable_timer_Instance);
 
-const createObservable_interval_Instance = createObservsbleSample(
+const createObservable_interval_Instance = createObservableSample(
   interval(100),
   "interval()",
   btn_co_interval
 );
 btn_co_interval.addEventListener("click", createObservable_interval_Instance);
 
-const createObservable_range_Instance = createObservsbleSample(
+const createObservable_range_Instance = createObservableSample(
   range(0, 11),
   "range()",
   btn_co_range
 );
 btn_co_range.addEventListener("click", createObservable_range_Instance);
 
-const createObservable_empty_Instance = createObservsbleSample(
+const createObservable_empty_Instance = createObservableSample(
   empty(),
   "empty()",
   btn_co_empty
 );
 btn_co_empty.addEventListener("click", createObservable_empty_Instance);
 
-const createObservable_throwError_Instance = createObservsbleSample(
+const createObservable_throwError_Instance = createObservableSample(
   throwError("Generated error"),
   "throwError(...)",
   btn_co_throwError
@@ -513,7 +510,7 @@ btn_co_throwError.addEventListener(
 );
 
 let random = Math.random() * 100;
-const createObservable_iif_Instance = createObservsbleSample(
+const createObservable_iif_Instance = createObservableSample(
   iif(
     () => {
       return Math.random() * 100 >= 50;
@@ -526,7 +523,7 @@ const createObservable_iif_Instance = createObservsbleSample(
 );
 btn_co_iif.addEventListener("click", createObservable_iif_Instance);
 
-const createObservable_defer_Instance = createObservsbleSample(
+const createObservable_defer_Instance = createObservableSample(
   defer(function () {
     let random = Math.random() * 100;
     if (random <= 50) {
